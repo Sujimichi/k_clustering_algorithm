@@ -7,6 +7,9 @@
 #
 
 class Point
+	attr_accessor :grp_id
+	attr_reader :values
+
 	def initialize values, meta_inf = nil
 		@values = values
 		@meta_inf = meta_inf if meta_inf
@@ -34,78 +37,11 @@ class Point
 		@values.size
 	end
 
-	def values 
-		@values
-	end
-
-	def grp_id= id
-		@grp_id = id
-	end
-
-	def grp_id
-		@grp_id
-	end
-end
-
-class KCluster
-	def initialize
-		@points = []
-		@g_count = 2
-		@groups = []
-		@g_count.times { @groups << Group.new }
-		@d = nil
-	end
-
-	def add_point point
-		@d ||= point.dimentions
-		raise "dimentional imcompatability" unless @d == point.dimentions
-		@points << point
-	end
-
-	def rand_assign
-		@points.each do |point|
-			r = (rand * (@groups.size-1)).round
-			@groups[r].add_point point
-		end
-	end
-
-	def process_points
-		@points.each do |point|
-			g = point.get_closest @groups
-			a = @groups.select{|grp| grp if grp.object_id == point.grp_id}
-			raise "Point was in two groups atst" if a.size > 1
-			a.first.rem_point(point)
-			g.add_point point
-		end
-	end
-
-	def g_inspect
-		@groups.each do |g| 
-			puts "group"
-			g.points.each {|p| puts "vals: #{p.values.inspect}" }
-			puts "mean: #{g.mean.inspect}"
-		end
-	end
-
-	def demo
-		grp_1 =[]
-		grp_2 =[]
-		8.times do 
-			grp_1 << Point.new([(rand*10).round, (rand * 10).round ])
-			grp_2 << Point.new([(rand*10).round + 20, (rand * 10).round + 20 ])
-		end
-		all = [grp_1, grp_2].flatten
-		all.each do |point|
-			add_point point
-		end
-		rand_assign
-		g_inspect
-		process_points
-		g_inspect
-	end
 end
 
 class Group
+	attr_accessor :grp_points
+
 	def initialize
 		@grp_points = []
 	end
@@ -137,24 +73,82 @@ class Group
 		@grp_points.size
 	end
 
-	def points 
-		@grp_points
-	end
-
 end
 
+class KCluster
+	def initialize
+		@points = []
+		@torrerance = 0
+		@g_count = 2
+		@groups = []
+		@g_count.times { @groups << Group.new }
+		@d = nil
+	end
 
+	def add_point point
+		@d ||= point.dimentions
+		raise "dimentional imcompatability" unless @d == point.dimentions
+		@points << point
+	end
+
+	def rand_assign
+		@points.each do |point|
+			r = (rand * (@groups.size-1)).round
+			@groups[r].add_point point
+		end
+	end
+
+	def cluster
+		moves = process_points
+		puts "Pass 1: #{moves} points moved"
+		i = 1
+		while moves > @torrerance do 
+			moves = process_points
+			puts "Pass #{i+=1}: #{moves} points moved"
+		end
+	end
+
+	def process_points
+		moves = 0
+		@points.each do |point|
+			closest_group = point.get_closest @groups
+			a = @groups.select{|grp| grp if grp.object_id == point.grp_id}
+			raise "Point was in two groups atst" if a.size > 1
+			current_group = a.first
+			unless current_group == closest_group
+				current_group.rem_point(point)
+				closest_group.add_point point
+				moves += 1
+			end
+		end
+		moves
+	end
+
+	def g_inspect
+		@groups.each do |g| 
+			puts "group"
+			g.grp_points.each {|p| puts "vals: #{p.values.inspect}" }
+			puts "mean: #{g.mean.inspect}"
+		end
+	end
+
+	def demo
+		grp_1 =[]
+		grp_2 =[]
+		8.times do 
+			grp_1 << Point.new([(rand*10).round, (rand * 10).round ])
+			grp_2 << Point.new([(rand*10).round + 5, (rand * 10).round + 5 ])
+		end
+		all = [grp_1, grp_2].flatten.sort_by { rand }
+		all.each do |point|
+			add_point point
+		end
+		rand_assign
+		g_inspect
+		cluster
+		g_inspect
+	end
+end
 
 k = KCluster.new
 k.demo
-=begin
-
-8.times do 
-	k.add_point Point.new([(rand*10).round, (rand * 10).round ])
-end
-k.rand_assign
-k.g_inspect
-k.process_points
-k.g_inspect
-
-=end
