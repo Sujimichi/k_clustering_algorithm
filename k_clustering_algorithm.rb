@@ -6,8 +6,6 @@
 #return to step 2 untill no more changes occur.
 #
 
-
-
 class Point
 	def initialize values, meta_inf = nil
 		@values = values
@@ -88,6 +86,23 @@ class KCluster
 			puts "mean: #{g.mean.inspect}"
 		end
 	end
+
+	def demo
+		grp_1 =[]
+		grp_2 =[]
+		8.times do 
+			grp_1 << Point.new([(rand*10).round, (rand * 10).round ])
+			grp_2 << Point.new([(rand*10).round + 20, (rand * 10).round + 20 ])
+		end
+		all = [grp_1, grp_2].flatten
+		all.each do |point|
+			add_point point
+		end
+		rand_assign
+		g_inspect
+		process_points
+		g_inspect
+	end
 end
 
 class Group
@@ -129,7 +144,11 @@ class Group
 end
 
 
+
 k = KCluster.new
+k.demo
+=begin
+
 8.times do 
 	k.add_point Point.new([(rand*10).round, (rand * 10).round ])
 end
@@ -137,3 +156,5 @@ k.rand_assign
 k.g_inspect
 k.process_points
 k.g_inspect
+
+=end
