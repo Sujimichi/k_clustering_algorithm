@@ -162,10 +162,22 @@ Shoes.app :resizable => false do
   stack do
     begin
 
-      k = KCluster.new(4)
-      (width/2).times do 
-        k.add_point Point.new([rand, rand, rand])
-      end
+      k = KCluster.new(2)
+    #  (width/2).times do 
+    #    k.add_point Point.new([rand, rand, rand])
+    #  end
+
+		grp_1 =[]
+		grp_2 =[]
+		offset = 0.2
+		100.times do 
+			grp_1 << Point.new( [rand, rand , rand] )
+			grp_2 << Point.new( [rand + offset, rand + offset, rand + offset ] )
+		end
+		all = [grp_1, grp_2].flatten.sort_by { rand }
+		all.each do |point|
+			k.add_point point
+		end
 
       k.rand_assign
       k.cluster
