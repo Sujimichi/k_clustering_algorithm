@@ -76,10 +76,11 @@ class Group
 end
 
 class KCluster
-	def initialize
+	attr_accessor :groups
+	def initialize grp_count = 2
 		@points = []
 		@torrerance = 0
-		@g_count = 2
+		@g_count = grp_count 
 		@groups = []
 		@g_count.times { @groups << Group.new }
 		@d = nil
@@ -150,5 +151,41 @@ class KCluster
 	end
 end
 
-k = KCluster.new
-k.demo
+#k = KCluster.new
+#k.demo
+
+Shoes.app :resizable => false do
+  background gradient(rgb(10, 10, 40), rgb(0, 0, 0))
+
+  title "K-means Cluster", :stroke => white
+
+  stack do
+    begin
+
+      k = KCluster.new(4)
+      (width/2).times do 
+        k.add_point Point.new([rand, rand, rand])
+      end
+
+      k.rand_assign
+      k.cluster
+
+      k.groups.each do |group|
+        nostroke
+        fill rgb(rand, rand, rand)
+
+        group.grp_points.each do |point|
+          x, y, z = *point.values
+          x = x * width
+          y = y * height
+          z = z * 20
+          oval(x, y, z, z)
+        end
+      end
+
+    rescue Object
+      title "Error!", :stroke => red
+      para [$!.inspect, $!.message, $!.backtrace.join("\n\t")].flatten.join("\n"), :stroke => white
+    end
+  end
+end
