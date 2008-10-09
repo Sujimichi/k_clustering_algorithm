@@ -5,6 +5,7 @@
 #check each point and move to group with closest mean pos
 #return to step 2 untill no more changes occur.
 #
+#require "../../stuff/shoes/dist/shoes"
 
 class Point
 	attr_accessor :grp_id
@@ -136,9 +137,10 @@ class KCluster
 	def demo
 		grp_1 =[]
 		grp_2 =[]
-		8.times do 
-			grp_1 << Point.new([(rand*10).round, (rand * 10).round ])
-			grp_2 << Point.new([(rand*10).round + 5, (rand * 10).round + 5 ])
+		offset = 0.5
+		80.times do 
+			grp_1 << Point.new( [rand, rand , rand] )
+			grp_2 << Point.new( [rand + offset, rand + offset, rand + offset ] )
 		end
 		all = [grp_1, grp_2].flatten.sort_by { rand }
 		all.each do |point|
@@ -149,55 +151,38 @@ class KCluster
 		cluster
 		g_inspect
 	end
+
+	def plot
+		groups = self.groups
+		Shoes.app :resizable => true do
+			background gradient(rgb(10, 10, 40), rgb(0, 0, 0))
+			title "K-means Cluster", :stroke => white
+			stack do
+				begin
+					groups.each do |group|
+						nostroke
+						fill rgb(rand, rand, rand)
+						group.grp_points.each do |point|
+							x, y, z = *point.values
+							x = x * width
+							y = y * height
+							z = z * 20
+							oval(x, y, z, z)
+						end
+					end
+				rescue Object
+					title "Error!", :stroke => red
+					para [$!.inspect, $!.message, $!.backtrace.join("\n\t")].flatten.join("\n"), :stroke => white
+				end
+			end
+		end
+	end
 end
 
-#k = KCluster.new
-#k.demo
+k = KCluster.new
+k.demo
+k.plot
 
-Shoes.app :resizable => false do
-  background gradient(rgb(10, 10, 40), rgb(0, 0, 0))
 
-  title "K-means Cluster", :stroke => white
 
-  stack do
-    begin
 
-      k = KCluster.new(2)
-    #  (width/2).times do 
-    #    k.add_point Point.new([rand, rand, rand])
-    #  end
-
-		grp_1 =[]
-		grp_2 =[]
-		offset = 0.2
-		100.times do 
-			grp_1 << Point.new( [rand, rand , rand] )
-			grp_2 << Point.new( [rand + offset, rand + offset, rand + offset ] )
-		end
-		all = [grp_1, grp_2].flatten.sort_by { rand }
-		all.each do |point|
-			k.add_point point
-		end
-
-      k.rand_assign
-      k.cluster
-
-      k.groups.each do |group|
-        nostroke
-        fill rgb(rand, rand, rand)
-
-        group.grp_points.each do |point|
-          x, y, z = *point.values
-          x = x * width
-          y = y * height
-          z = z * 20
-          oval(x, y, z, z)
-        end
-      end
-
-    rescue Object
-      title "Error!", :stroke => red
-      para [$!.inspect, $!.message, $!.backtrace.join("\n\t")].flatten.join("\n"), :stroke => white
-    end
-  end
-end
